@@ -1,0 +1,50 @@
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: ./backend   # Dockerfile context for backend service
+    container_name: backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/db
+    depends_on:
+      - db
+    networks:
+      - todo-network
+
+  frontend:
+    build:
+      context: ./frontend   # Dockerfile context for frontend service
+    container_name: frontend
+    restart: always
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    networks:
+      - todo-network
+
+  db:
+    image: postgres:13
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Map local port 5432 to container port 5432
+    networks:
+      - todo-network
+
+networks:
+  todo-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
